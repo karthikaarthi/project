@@ -1,0 +1,50 @@
+    User Management: Role-based authentication (Admin, Student, Instructor).
+    Course & Batch Management: Students enroll in courses & get assigned to batches.
+    Attendance System: Instructors mark attendance, and absentees' parents get notified.
+    Notification System: SMS/Email alerts for attendance and course updates.
+    Security: JWT authentication and Role-Based Access Control (RBAC)."**
+
+🔥 Now, you are ready for your interview! Let me know if you need more clarifications. 🚀
+You said:
+which technology is used
+ChatGPT said:
+
+Your Computer Teaching Institution Management System project is built using the following technologies:
+🔹 Tech Stack Used
+Frontend (User Interface)
+
+✅ Flutter (Dart) – To build a cross-platform mobile app for students, staff, and admin.
+Backend (Server & API)
+
+✅ Node.js (Express.js) – Handles API requests, authentication, and database communication.
+Database
+
+✅ MongoDB – A NoSQL database for storing students, courses, batches, attendance, and user details.
+Authentication & Security
+
+✅ JWT (JSON Web Token) – For secure user authentication (Role-Based Access Control - RBAC).
+✅ bcrypt.js – For password hashing.
+Communication & Notifications
+
+✅ Nodemailer – To send email notifications to parents and staff when students are absent.
+✅ Twilio (Optional) – To send SMS notifications for important updates.
+Middleware & Other Tools
+
+✅ Mongoose – For MongoDB object modeling in Node.js.
+✅ dotenv – For managing environment variables (e.g., database URL, JWT secret).
+✅ Postman – To test API routes during development.
+🔹 Why These Technologies?
+
+    Flutter: Supports Android & iOS with a single codebase.
+    Node.js (Express.js): Handles scalable and fast backend operations.
+    MongoDB: A flexible, schema-less database for managing large amounts of student and course data.
+    JWT Authentication: Provides secure login and role-based access control.
+    Notification System: Alerts parents and staff about attendance.
+
+💡 Example: How These Technologies Work Together
+
+    Flutter App → Sends login request to Node.js API
+    Node.js → Verifies credentials using JWT & MongoDB
+    User Access → Based on role (Admin, Instructor, Student)
+    Attendance Tracking → Instructor marks attendance in the Flutter app
+    Notification → If a student is absent, Node.js sends an email/SMS
