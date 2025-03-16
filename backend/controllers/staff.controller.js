@@ -86,10 +86,19 @@ async function deleteStaff ( req, res, next ) {
         next(err);
     }
 }
+
+
+async function staffDashboard(req, res, next) {
+    res.status(200).json({
+        message: "Welcome to Staff"
+    })
+}
+
 module.exports = {
     createStaff,
     getAllStaff,
     getStaffId,
     updateStaff,
-    deleteStaff
+    deleteStaff,
+    staffDashboard
 }

@@ -2,36 +2,92 @@
 const Student = require("../db/models/student.model")
 const errorHandler = require("../utils/errorHandler")
 const User = require("../db/models/user.model")
+const nodemailer = require("nodemailer");
+require('dotenv').config();
+const bycrypt = require("bcryptjs")
+
+const generateOTP = () => Math.floor(1000 + Math.random()*900000).toString();
+
+
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS
+    }
+})
+
+
+
+
 async function addStudent(req, res, next) {
     try{
-        const {user } = req.body;
-        const userExists= await User.findById(user)
-        console.log(userExists)
-        if(!userExists || userExists.role !== "Student"){
-            return next(errorHandler(404,"Student user not found "))
+
+        const {regNo, name, dateOfBirth, mobileNo, gender, occupation, email, guardian, address, applyingFor, education, officeUse}= req.body;
+
+        const userExists = await User.findOne({email })
+        if(userExists){
+            return next(errorHandler(400,"Email already exists"))
         }
 
-        const existingStudent = await Student.findOne({user: user })
-        if(existingStudent){
-            return next(errorHandler(400,"Student profile is already exists"))
-        }
-        const newStudent = new Student (req.body);
-        await newStudent.save();
-        res.status(201).json({
-            success: true,
-            message: "student added successfully"
+        const otp = generateOTP();
+        const otpExpires = Date.now()+10*60*1000;
+
+        const newUser = new User({
+            email,
+            otp,
+            otpExpires,
+            role:"Student",
+            parentEmail: guardian.parentEmail
         })
 
-        
+        newUser.save();
+    // const newStudent = new Student ({
+    //     user: newUser._id,
+    //     regNo,
+    //     name,
+    //     dateOfBirth,
+    //     mobileNo,
+    //     gender,
+    //     occupation,
+    //     email,
+    //     guardian,
+    //     address,
+    //     applyingFor,
+    //     education,
+    //     officeUse
+
+    // });
+    const newStudent =new Student(req.body)
+
+    await newStudent.save();
+
+    const mailOptions = {
+        from: process.env.GMAIL_USER,
+        to:email,
+        subject: "Your OTP for Account Activation",
+        text: `Your OTP is ${otp}. It is valid for 10 minutes.`
+    }
+
+    transporter.sendMail(mailOptions);
+        res.status(201).json({
+            success: true,
+            message: "student added successfully",
+            data: {
+                student: newStudent,
+                user: newUser
+            }
+        })
+
+         
     }catch(err) {
         next(err);
     }
 }
 
-
 async function getStudents (req, res, next){
     try {
-       const students = await Student.find();
+       const students = await Student.find().populate('user');
        res.status(200).json({
         success: true,
         data: {
@@ -46,7 +102,7 @@ async function getStudents (req, res, next){
 
 async function getStudentById(req, res, next) {
     try {
-        const student = await Student.findById(req.params.id)
+        const student = await Student.findById(req.params.id);
         if(!student) return next(errorHandler(404,"Student not found"))
         res.status(200).json({
             success: true,
@@ -91,10 +147,18 @@ async function deleteStudent(req, res, next) {
         next(err)
     }
 }
+
+async function studentDashboard(req, res, next) {
+    res.status(200).json({
+        message: "Welcome to Student"
+    })
+}
+
 module.exports = {
     addStudent,
     getStudents,
     getStudentById,
     updateStudent,
-    deleteStudent
+    deleteStudent,
+    studentDashboard,
 }

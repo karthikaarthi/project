@@ -1,12 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const {registerStudent, login, logOut, createAdmin, registerStaff} = require("../controllers/auth.controller");
+const { login, logOut, verifyOTP, forgotPassword, resetPassword } = require("../controllers/auth.controller");
 const {verifyToken, checkRole} = require("../middleware/authMiddleware")
 
-router.post('/register-student', verifyToken, checkRole(["Admin"]), registerStudent)
-      .post('/register-staff', verifyToken, checkRole(["Admin"]), registerStaff)
-      .post("/create-admin",verifyToken,checkRole(["Admin"]), createAdmin)
-      .post("/login", login)  
-      .get("/logout", logOut)
-      
+          
+          
+router.post('/login', login)
+      .get('/logout', verifyToken, logOut)
+      .post("/verifyOTP", verifyOTP)
+      .post('/forgot-password', forgotPassword)
+      .post('/reset-password', resetPassword)
+
 module.exports = router;
+
