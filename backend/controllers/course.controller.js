@@ -63,6 +63,7 @@ async function updateCourse(req, res, next) {
     }
 }
 
+
 async function deleteCourse (req, res, next) {
     try {
        const deletedCourse = await Course.findByIdAndDelete(req.params.id);
@@ -75,10 +76,119 @@ async function deleteCourse (req, res, next) {
     }
 }
 
+
+async function getTotalCourses (req, res, next){
+    try {
+        const totalCourses = await Course.aggregate([
+            {$count: "totalCourses"}
+        ]);
+        const total = totalCourses.length > 0 ? totalCourses[0].totalCourses : 0;
+        res.status(200).json({data:total})
+    }catch(err) {
+        next(err);
+    }
+}
+
+async function getCourseWithStudentCount(req, res, next ) {
+    try {
+
+        const courseWithStudents = await Course.aggregate([
+            {
+                $lookup: {
+                    from: "students",
+                    localField: "_id",
+                    foreignField: "courseId",
+                    as: "enrolledStudents"
+                }
+            },
+            {
+                $project: {
+                    courseName: 1,
+                    totalStudents: {$size: "$enrolledStudents"}
+                }
+            }
+        ])
+        res.status(200).json({
+            success: true,
+            data: courseWithStudents
+        })
+    } catch(err) {
+        next( err );
+    }
+}
+
+
+async function getPopularCourses (req, res ) {
+    try {
+        const popularCourses = await Course.aggregate([
+            {
+                $lookup: {
+                    from: "students",
+                    localField : "_id",
+                    foreignField: "courseId",
+                    as: "students"
+                }
+            },
+            {
+                $project: {
+                    courseName: 1,
+                    totalStudents: {$size: "$students"}
+
+                }
+            },
+            { $sort: { totalStudents: -1 } } 
+        ]);
+
+        res.status(200).json({
+            success: true,
+            data: popularCourses
+        })
+    } catch(err) {
+        next(err);
+    }
+}
+
+async function getAverageEntrollment(req,res, next) {
+    try {
+
+        const avgEntrollment = await Course.aggregate([
+            {
+                $lookup: {
+                    from: "students",
+                    localField: "_id",
+                    foreignField: "courseId",
+                    as: "students"
+                }
+               
+            },
+            {
+                $group: {
+                    _id: null,
+                    avgEntrollment: {$avg: {$size: "$students"}}
+                }
+            }
+        ])
+        // const average = avgEntrollment.length >0 ? avgEntrollment[0].avgEntrollment: 0;
+        
+        res.status(200).json({
+            success: true,
+            avgEntrollment:avgEntrollment
+        })
+    } catch(err) {
+        next(err);
+    }
+}
+
+
 module.exports = {
+    
     createCourse,
     getAllCourses,
     getCourseById,
     updateCourse,
-    deleteCourse
+    deleteCourse,
+    getTotalCourses,
+    getCourseWithStudentCount,
+    getPopularCourses,
+    getAverageEntrollment
 }

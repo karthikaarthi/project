@@ -88,10 +88,45 @@ async function deleteBatch (req, res, next) {
         next(err);
     }
 }
+
+
+async function getTotalBatches(req, res,  next) {
+    try {
+        const totalBatches = await Batch.aggregate([
+            {
+                $count: "totalBatches"
+            }
+        ])
+        const total = totalBatches.length>0? totalBatches[0].totalBatches:0;
+        res.status(200).json({
+            success: true,
+            data: total
+        })
+    } catch(err) {
+        next(err);
+    }
+}
+
+
+async function getBatchWithStaff (req, res, next) {
+    try {
+        const batchWithStaff = await Batch.aggregate([
+            {
+                $lookup: {
+                    from :"staffs",
+                    localField: 
+                }
+            }
+        ])
+    } catch(err) {
+        next(err) ;
+    }
+}
 module.exports = {
     createBatch,
     getAllBatch,
     getBatchById,
     updateBatch,
-    deleteBatch
+    deleteBatch,
+    getTotalBatches
 }

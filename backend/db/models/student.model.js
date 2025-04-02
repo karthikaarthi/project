@@ -1,11 +1,6 @@
 const mongoose = require("mongoose");
 
 const studentSchema = new mongoose.Schema({
-    // user: {
-    //     type: mongoose.Schema.Types.ObjectId,
-    //     ref: "User",
-    //     required: true
-    // },
    regNo: {
     type: String,
     required: true,
@@ -64,8 +59,9 @@ const studentSchema = new mongoose.Schema({
         pinCode: {type: String, required: true},
 
     },
-    applyingFor: {
-        type: String,
+    courseId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref:"Course",
         required: true
     },
     education: {
@@ -75,18 +71,18 @@ const studentSchema = new mongoose.Schema({
         yearOfStudy: {type: Number, required: true},
         dateOfApplication: {type: Date, default: Date.now}
     },
-    officeUse: {
-        courseName: {type: String, required: true},
-        duration:{type: String, required: true},
-        startDate: {type: Date, required: true},
-        batchTime: {type: String, required: true},
-        totalAmout: {type: Number, required: true},
-        paymentMethod: {
-            type: String, 
-            enum: ["Installment","Lump Sum"],
-            required: true
-        },
-    }
+    // officeUse: {
+    //     courseName: {type: String, required: true},
+    //     duration:{type: String, required: true},
+    //     startDate: {type: Date, required: true},
+    //     batchTime: {type: String, required: true},
+    //     totalAmout: {type: Number, required: true},
+    //     paymentMethod: {
+    //         type: String, 
+    //         enum: ["Installment","Lump Sum"],
+    //         required: true
+    //     },
+    // }
    
 })
 

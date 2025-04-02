@@ -23,7 +23,7 @@ const transporter = nodemailer.createTransport({
 async function addStudent(req, res, next) {
     try{
 
-        const {regNo, name, dateOfBirth, mobileNo, gender, occupation, email, guardian, address, applyingFor, education, officeUse}= req.body;
+        const {email, guardian}= req.body;
 
         const userExists = await User.findOne({email })
         if(userExists){
@@ -42,22 +42,6 @@ async function addStudent(req, res, next) {
         })
 
         newUser.save();
-    // const newStudent = new Student ({
-    //     user: newUser._id,
-    //     regNo,
-    //     name,
-    //     dateOfBirth,
-    //     mobileNo,
-    //     gender,
-    //     occupation,
-    //     email,
-    //     guardian,
-    //     address,
-    //     applyingFor,
-    //     education,
-    //     officeUse
-
-    // });
     const newStudent =new Student(req.body)
 
     await newStudent.save();
@@ -69,7 +53,7 @@ async function addStudent(req, res, next) {
         text: `Your OTP is ${otp}. It is valid for 10 minutes.`
     }
 
-    transporter.sendMail(mailOptions);
+    await transporter.sendMail(mailOptions);
         res.status(201).json({
             success: true,
             message: "student added successfully",
@@ -87,7 +71,7 @@ async function addStudent(req, res, next) {
 
 async function getStudents (req, res, next){
     try {
-       const students = await Student.find().populate('user');
+       const students = await Student.find();
        res.status(200).json({
         success: true,
         data: {
@@ -154,6 +138,99 @@ async function studentDashboard(req, res, next) {
     })
 }
 
+async function getTotalStudents (req, res, next) {
+    try {
+        const totalStudents = await Student.aggregate([
+            {
+                $count: "totalStudents"
+            }
+        ])
+        res.status(200).json({
+            success: true,
+            totalStudents: totalStudents[0]?totalStudents:0
+        })
+    } catch(err) {
+        next(err);
+    }
+} 
+
+
+async function getStudentsByCourse(req, res, next) {
+    try {
+        const studentsByCourse = await Student.aggregate([
+            {$group:{
+                _id: "$courseId",
+                totalStudents : {$sum:1}
+            }},
+            {
+                $lookup: {
+                    from: "courses",
+                    localField: "_id",
+                    foreignField: "_id",
+                    as: "courseDetails"
+                }
+            },
+
+            {
+                $unwind: {
+                    path: "$courseDetails",
+                    preserveNullAndEmptyArrays: true
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    courseId: "$_id",
+                    totalStudets: 1,
+                    courseName: "$courseDetails.name"
+                }
+            }
+        ])
+
+        res.status(200).json({
+            success: true,
+            data: studentsByCourse
+        })
+    } catch(err) {
+        next(err) ;
+    }
+}
+
+async function getAverageAge(req, res, next) {
+    try {
+        const average = await Students.aggregate([
+            {
+                $group: {
+
+                }
+            }
+        ])
+    }catch(err) {
+        next(err);
+    }
+}
+
+
+async function getStudentsWithCourses (req, res, next) {
+    try {
+        const studentsWithCourses = await Student.aggregate([
+            {
+                $lookup: {
+                    from: "courses",
+                    localField: "courseName",
+                    foreignField: "courseName",
+                    as: "courseDetails"
+                }
+            }
+        ])
+        res.status(200).json({
+            success: true,
+            data: studentsWithCourses
+        })
+    }catch(err) {
+        next(err) ;
+    }
+}
 module.exports = {
     addStudent,
     getStudents,
@@ -161,4 +238,7 @@ module.exports = {
     updateStudent,
     deleteStudent,
     studentDashboard,
+    getTotalStudents,
+    getStudentsWithCourses,
+    getStudentsByCourse
 }

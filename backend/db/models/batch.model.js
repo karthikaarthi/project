@@ -14,19 +14,24 @@ const batchSchema = new  mongoose.Schema({
     },
     students: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: "Student"
+        ref: "Student",
+        required: true
     }],
     staff: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
     },
     schedule: {
-        type: String,
-        required: true
+        days: [String],
+        time: String
     },
     startDate: {
         type: Date,
         required: true
+    },
+    maxStudents: {
+        type: Number,
+        default: 30
     },
     endDate: {
         type: Date
@@ -34,8 +39,14 @@ const batchSchema = new  mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    status: {
+        type: String,
+        enum: ["upcoming", "ongoing", "completed", "cancelled"],
+        default: "upcoming"
     }
-})
+    
+},{ timestamps: true })
 
 const Batch = mongoose.model("Batch",batchSchema);
 module.exports = Batch;
