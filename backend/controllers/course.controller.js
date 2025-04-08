@@ -4,9 +4,9 @@ const errorHandler = require("../utils/errorHandler");
 
 async function createCourse( req, res, next) {
 try {
-    const {courseName, duration, fees} = req.body;
+    const {courseName, duration, fees, subjects} = req.body;
 
-    const newCourse = new Course({courseName, duration, fees })
+    const newCourse = new Course({courseName, duration, fees, subjects })
     await newCourse.save();
     res.status(201).json({
         msg: "Course created successfully"

@@ -20,6 +20,7 @@ const batchSchema = new  mongoose.Schema({
     staff: {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User"
+        
     },
     schedule: {
         days: [String],

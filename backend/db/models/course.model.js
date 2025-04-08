@@ -14,6 +14,7 @@ const courseSchema= new mongoose.Schema({
         type: Number,
         required: true
     },
+    subjects:[String],
     createdAt: {
         type: Date,
         default: Date.now
