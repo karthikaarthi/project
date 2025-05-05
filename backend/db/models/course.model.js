@@ -18,6 +18,20 @@ const courseSchema= new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    category: {
+        type: String,
+        required: true,
+        enum: [
+            'Programming',
+            'Advanced Programming',
+            'Autocadd',
+            'Tailoring',
+            'Beautician',
+            'Typewritting'
+
+        ]
+
     }
 })
 

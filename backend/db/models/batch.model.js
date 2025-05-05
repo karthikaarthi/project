@@ -19,7 +19,7 @@ const batchSchema = new  mongoose.Schema({
     }],
     staff: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "User"
+        ref: "Staff"
         
     },
     schedule: {
@@ -37,6 +37,14 @@ const batchSchema = new  mongoose.Schema({
     endDate: {
         type: Date
     },
+    notificationEnabled: {
+        type: Boolean,
+        default: true
+    },
+    progress: {
+        type: Number,
+        default: 0
+    },
     createdAt: {
         type: Date,
         default: Date.now
@@ -44,7 +52,7 @@ const batchSchema = new  mongoose.Schema({
     status: {
         type: String,
         enum: ["upcoming", "ongoing", "completed", "cancelled"],
-        default: "upcoming"
+        // default: "upcoming"
     }
     
 },{ timestamps: true })

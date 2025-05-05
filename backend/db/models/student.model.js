@@ -33,7 +33,32 @@ const studentSchema = new mongoose.Schema({
     unique: true,
     required: true
    },
-
+   subjects: [{
+    subjectName: { type: String, required: true},
+    status: {
+        type: String,
+        enum: ['Not Started','In Progress','Completed'],
+        default: 'Not Started',
+    },
+    progress: {
+        type: Number,
+        default: 0,
+    },
+    startDate: {type: Date },
+    endDate: { type: Date }
+   }],
+   status: {
+    type: String,
+    enum: ["active", "onBreak", "completed"],
+    default: "active"
+   },
+   breakDetails: {
+    from: { type: Date },
+    to: { type: Date },
+    reason: { type: String }
+   },
+   rejoinDate : { type: Date },
+   missedModules: [String],
    guardian: {
     fatherName: {
         type: String,
@@ -70,19 +95,7 @@ const studentSchema = new mongoose.Schema({
         institutionName: {type: String, required: true},
         yearOfStudy: {type: Number, required: true},
         dateOfApplication: {type: Date, default: Date.now}
-    },
-    // officeUse: {
-    //     courseName: {type: String, required: true},
-    //     duration:{type: String, required: true},
-    //     startDate: {type: Date, required: true},
-    //     batchTime: {type: String, required: true},
-    //     totalAmout: {type: Number, required: true},
-    //     paymentMethod: {
-    //         type: String, 
-    //         enum: ["Installment","Lump Sum"],
-    //         required: true
-    //     },
-    // }
+    }
    
 })
 

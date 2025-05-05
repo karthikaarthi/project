@@ -4,9 +4,9 @@ const errorHandler = require("../utils/errorHandler");
 
 async function createCourse( req, res, next) {
 try {
-    const {courseName, duration, fees, subjects} = req.body;
+    const {courseName, duration, fees, subjects,category} = req.body;
 
-    const newCourse = new Course({courseName, duration, fees, subjects })
+    const newCourse = new Course({courseName, duration, fees, subjects ,category})
     await newCourse.save();
     res.status(201).json({
         msg: "Course created successfully"
@@ -91,7 +91,6 @@ async function getTotalCourses (req, res, next){
 
 async function getCourseWithStudentCount(req, res, next ) {
     try {
-
         const courseWithStudents = await Course.aggregate([
             {
                 $lookup: {
@@ -108,6 +107,7 @@ async function getCourseWithStudentCount(req, res, next ) {
                 }
             }
         ])
+
         res.status(200).json({
             success: true,
             data: courseWithStudents
@@ -180,6 +180,19 @@ async function getAverageEntrollment(req,res, next) {
 }
 
 
+
+async function getCoursesByCategory (req, res, next) {
+    try {
+        const category = req.params.category;
+        console.log(category);
+        const courses = await Course.find({category});
+        res.status(200).json(courses);
+
+    } catch(err) {
+        next(err);
+    }
+}
+
 module.exports = {
     
     createCourse,
@@ -190,5 +203,6 @@ module.exports = {
     getTotalCourses,
     getCourseWithStudentCount,
     getPopularCourses,
-    getAverageEntrollment
+    getAverageEntrollment,
+    getCoursesByCategory
 }

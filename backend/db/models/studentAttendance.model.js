@@ -6,14 +6,21 @@ const StudentAttendanceSchema = new mongoose.Schema({
         ref: "Student",
         required: true
     },
+    batchId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Batch",
+        required: true,
+    }
+    ,
     date: {
         type: Date,
-        default: Date.now
+        // default: Date.now
+        required: true
     },
     status: {
         type: String,
         enum: ["Present", "Absent", "Late"],
-        require: true
+        required: true
     },
     markedBy : {
         type: mongoose.Schema.Types.ObjectId,
@@ -21,6 +28,9 @@ const StudentAttendanceSchema = new mongoose.Schema({
         required: true
     }
 },{timestamps: true})
+
+StudentAttendanceSchema.index({student: 1,batchId: 1, date: 1},{ unique: true});
+
 
 const StudentAttendance = mongoose.model("StudentAttendance", StudentAttendanceSchema);
 module.exports = StudentAttendance;

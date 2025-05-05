@@ -5,7 +5,6 @@ const User = require("../db/models/user.model") ;
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 const nodemailer = require("nodemailer");
-const Blacklist = require("../db/models/blackList.model");
 
 const generateToken = (id, role) =>{
     return jwt.sign({id,role},process.env.SECRET_KEY, {expiresIn:"1d"})

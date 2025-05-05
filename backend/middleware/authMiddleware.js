@@ -2,7 +2,6 @@
 require("dotenv").config() 
 const jwt = require("jsonwebtoken");
 const errorHandler = require("../utils/errorHandler");
-const Blacklist = require("../db/models/blackList.model");
 
 async function verifyToken(req, res, next) {
     

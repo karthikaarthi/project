@@ -1,4 +1,5 @@
 const User = require("../db/models/user.model");
+const Student = require("../db/models/student.model");
 const Notification = require("../db/models/notification.model");
 const nodemailer = require("nodemailer");
 const errorHandler = require("./errorHandler");
@@ -6,12 +7,11 @@ const errorHandler = require("./errorHandler");
 
 async function sendNotification(studentId, message) {
     try {
-        const student = await User.findById(studentId);
+        const student = await Student.findById(studentId);
         if(!student) {
-             console.log("Student not found")
+             console.log("Student not found");
               return;
         }
-        const parent = await User.findOne({email: student.parentEmail})
         const notification = new Notification({
             userId : studentId,
             message: message,
@@ -20,8 +20,9 @@ async function sendNotification(studentId, message) {
         await notification.save();
         if(student.email)
                 await sendEmail(student.email, "Attendance Notification", message);
-        if(parent && parent.email) 
-                await sendEmail(parent.email, "Attendance Notification", `Your child ${student.name} was marked absent`)
+        console.log(student.guardian.parentEmail)
+        if(student.guardian && student.guardian.parentEmail) 
+                await sendEmail(student.guardian.parentEmail, "Attendance Notification", `Your child ${student.name} was marked absent`)
     console.log("Notification sent successfully")
     }catch(err) {
         console.log(err)

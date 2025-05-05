@@ -41,7 +41,7 @@ async function addStudent(req, res, next) {
             parentEmail: guardian.parentEmail
         })
 
-        newUser.save();
+       await newUser.save();
     const newStudent =new Student(req.body)
 
     await newStudent.save();
@@ -231,6 +231,78 @@ async function getStudentsWithCourses (req, res, next) {
         next(err) ;
     }
 }
+
+async function updateStudentSubjects (req, res, next) {
+    try {
+        const { studentId } = req.params;
+        const { subjects }  = req.body;
+        
+        const student = await Student.findByIdAndUpdate(
+            studentId,
+            {subjects },
+            {new: true}
+        );
+
+        if(!student) return next(errorHandler(404, "Student not found"));
+
+        res.status(200).json({
+            student
+        })
+    } catch(err) {
+        next(err);
+    }
+}
+
+async function markStudentOnBreak(req, res, next) {
+    try {
+        const {studentId } = req.params;
+        const { from, to, reason } = req.body;
+
+
+        const student = await Student.findByIdAndUpdate(
+            studentId,
+            {
+                status: "onBreak",
+                breakDetails: { from, to, reason },
+                rejoinDate: null
+            },
+            {new: true }
+        );
+
+
+        res.status(200).json({
+            message: "Student marked as on break.",
+            student
+        })
+    } catch(err) {
+        next(err);
+    }
+}
+
+async function rejoinStudent (req, res, next ) {
+    try {
+         const {studentId  } = req.params;
+         const { rejoinDate, missedModules } = req.body;
+        console.log(req.body)
+         const student = await Student.findByIdAndUpdate(
+            studentId,
+            {
+                status: "active",
+                rejoinDate: new Date(rejoinDate),
+                breakDetails: null,
+                missedModules: missedModules || []
+            },
+            { new: true }
+         );
+
+         res.status(200).json({
+            message: "Student rejoined successfully.",
+            student 
+         })
+    }catch(err) {
+        next(err);
+    }
+}
 module.exports = {
     addStudent,
     getStudents,
@@ -240,5 +312,8 @@ module.exports = {
     studentDashboard,
     getTotalStudents,
     getStudentsWithCourses,
-    getStudentsByCourse
+    getStudentsByCourse,
+    updateStudentSubjects,
+    markStudentOnBreak,
+    rejoinStudent
 }

@@ -1,104 +1,123 @@
-const { model } = require("mongoose");
+const Staff = require("../db/models/staff.model");
 const User = require("../db/models/user.model");
 const errorHandler = require("../utils/errorHandler");
+const nodemailer = require("nodemailer");
+const bcrypt = require("bcryptjs");
+require("dotenv").config();
 
-async function createStaff ( req, res, next){
-    try {
-        const {name, email, password, phone, department, salary} = req.body;
+const generateOTP = () => Math.floor(1000+Math.random()*900000).toString();
 
-        const existingStaff = await User.findOne({email});
-        if(existingStaff) return next(errorHandler(400, "Staff already exists"));
-
-        const newStaff = new User({
-            name, 
-            email,
-            password,
-            phone,
-            role: "Staff",
-            department,
-            salary
-        });
-        await newStaff.save();
-        res.status(201).json({
-            success: true,
-            data: newStaff
-        })
-    }catch(err){
-        next(err);
-
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+      user: process.env.GMAIL_USER,
+      pass: process.env.GMAIL_PASS
     }
-}
+  });
+  
 
-async function getAllStaff( req, res, next ) {
+  async function addStaff(req, res, next) {
     try {
-        const staff = await User.find({role: "Staff"});
-        res.status(200).json({
-            success: true,
-            data: staff
-        })
-    }catch(err) {
-        next(err);
-    }
-}
-
-async function getStaffId(req, res, next) {
-    try {
-        const staff = await User.findById(req.params.id);
-        if(!staff || staff.role!== "Staff") return next(errorHandler(404,"Staff not found"));
-        res.status(200).json({
-            success: true,
-            data: staff
-        })
-    }catch(err) {
-        next(err);
-    }
-}
-
-async function updateStaff ( req, res, next) {
-    try {
-        const updatedStaff = await User.findByIdAndUpdate(req.params.id, req.body,{new: true});
-        if(!updatedStaff || updatedStaff.role !== "Staff"){
-            return next(errorHandler(404, "Staff not found"))
+      const { email, password, name, phone, department, salary } = req.body;
+  
+      const existingUser = await User.findOne({ email });
+      if (existingUser) return next(errorHandler(400, "Email already exists"));
+  
+      const existingPhone = await Staff.findOne({ phone });
+      if (existingPhone) return next(errorHandler(400, "Phone already exists"));
+  
+      const otp = generateOTP();
+      const otpExpires = Date.now() + 10 * 60 * 1000;
+  
+      const hashedPassword = await bcrypt.hash(password, 10);
+  
+      const newUser = new User({
+        email,
+        password: hashedPassword,
+        role: "Staff",
+        otp,
+        otpExpires
+      });
+  
+      await newUser.save();
+  
+      const newStaff = new Staff({
+        // userId: newUser._id,
+        name,
+        phone,
+        department,
+        salary
+      });
+  
+      await newStaff.save();
+  
+      // Send OTP Email
+      const mailOptions = {
+        from: process.env.GMAIL_USER,
+        to: email,
+        subject: "Your Staff Account OTP Verification",
+        text: `Welcome ${name},\n\nYour OTP is ${otp}. It is valid for 10 minutes.`
+      };
+  
+      await transporter.sendMail(mailOptions);
+  
+      res.status(201).json({
+        success: true,
+        message: "Staff added successfully. OTP sent to email.",
+        data: {
+          staff: newStaff,
+          user: newUser
         }
+      });
+  
+    } catch (err) {
 
-        res.status(200).json({
-            success: true,
-            data: updatedStaff
-        })
-    }catch(err) {
-        next(err);
+      
+      next(err);
     }
+  }
+  
+async function getAllStaff(req, res, next) {
+  try {
+    const staffList = await Staff.find();
+    res.status(200).json({ success: true, data: staffList });
+  } catch (err) {
+    next(err);
+  }
 }
 
-
-async function deleteStaff ( req, res, next ) {
-    try {
-        const deletedStaff = await User.findByIdAndDelete(req.params.id);
-        if(!deletedStaff || deletedStaff.role !== "Staff"){
-            return next(errorHandler(404, "Staff not found"));
-        }
-
-        res.status(200).json({
-            success: true,
-            message: "Staff mumber deleted successfully"
-        })
-    }catch(err) {
-        next(err);
-    }
+async function getStaffById(req, res, next) {
+  try {
+    const staff = await Staff.findById(req.params.id).populate("userId");
+    if (!staff) return next(errorHandler(404, "Staff not found"));
+    res.status(200).json({ success: true, data: staff });
+  } catch (err) {
+    next(err);
+  }
 }
 
+async function updateStaff(req, res, next) {
+  try {
+    const updated = await Staff.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.status(200).json({ success: true, data: updated });
+  } catch (err) {
+    next(err);
+  }
+}
 
-async function staffDashboard(req, res, next) {
-    res.status(200).json({
-        message: "Welcome to Staff"
-    })
+async function deleteStaff(req, res, next) {
+  try {
+    const deleted = await Staff.findByIdAndDelete(req.params.id);
+    res.status(200).json({ success: true, data: deleted });
+  } catch (err) {
+    next(err);
+  }
 }
 
 module.exports = {
-    createStaff,
-    getAllStaff,
-    getStaffId,
-    updateStaff,
-    deleteStaff,
-    staffDashboard
-}
+  addStaff,
+  getAllStaff,
+  getStaffById,
+  updateStaff,
+  deleteStaff
+};
